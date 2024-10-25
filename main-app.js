@@ -17,37 +17,69 @@ export class MainApp extends HTMLElement {
         this.handleDisconnect = this.handleDisconnect.bind(this);
     }
 
+    _initTestRotation() {
+        let angle = 0;
+        setInterval(() => {
+            angle += 10; // Increment the angle for rotation
+            // Set the rotation using the setRotation method
+            this.#obj.setRotation(0, angle, 0); // Rotate around Y-axis
+        }, 100);
+    }
+    
     connectedCallback() {
         this.innerHTML = `
-        <style>
-        #list {
-            display: grid;
-            grid-template-columns: 1fr 3fr;
-            width: 600px;
-        }
-
-        </style>
-
-        <h1>LEGO Mario/Luigi/Peach Demo</h1>
-        <button id='connect'>CONNECT</button>
-        <h2>Status: <span id='status'> - </span></h2>
-        <h3>Camera: <span id='camera'> - </span></h3> 
-        <div id='list'></div>
-        <demo-3dobj></demo-3dobj>
+            <style>
+                #list {
+                    display: grid;
+                    grid-template-columns: 1fr 3fr;
+                    width: 600px;
+                }
+    
+                main-app {
+                    perspective: 1000px;
+                }
+    
+                demo-3dobj {
+                    width: 300px;
+                    height: 300px;
+                    transform-style: preserve-3d;
+                    transition: transform 1s ease;
+                    background-color: lightblue; /* For visibility */
+                }
+    
+                #list .label, #list .value {
+                    transform: translateZ(10px);
+                    font-size: 1.2em;
+                }
+            </style>
+    
+            <h1>LEGO Mario/Luigi/Peach Demo</h1>
+            <button id='connect'>CONNECT</button>
+            <h2>Status: <span id='status'> - </span></h2>
+            <h3>Camera: <span id='camera'> - </span></h3>
+            <div id='list'></div>
+            <demo-3dobj></demo-3dobj>
         `;
-
-
+    
         this.#obj = this.querySelector('demo-3dobj');
+        if (!this.#obj) {
+            console.error('Error: demo-3dobj element not found.');
+            return;
+        }
+    
         this.querySelector('#connect').addEventListener('click', this.doScan);
-
+    
+        // Initialize test rotation
+        this._initTestRotation();
+    
         this._initList();
-
         LegoMarioDriver.addEventListener('connect', this.handleConnect);
         LegoMarioDriver.addEventListener('disconnect', this.handleDisconnect);
         LegoMarioDriver.addEventListener('translate', this.handleTranslate);
         LegoMarioDriver.addEventListener('camera', this.handleCamera);
     }
-
+    
+    
     disconnectedCallback() {
         LegoMarioDriver.removeEventListener('connect', this.handleConnect);
         LegoMarioDriver.removeEventListener('disconnect', this.handleDisconnect);
